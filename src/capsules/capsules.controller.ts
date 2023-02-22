@@ -4,6 +4,7 @@ import { CapsuleService } from './service/capsule.service';
 import { Capsule } from './interface/capsule-interface';
 import { Response } from 'express';
 
+
 @Controller('capsule')
 export class CapsulesController {
     constructor(private readonly capsuleService: CapsuleService) {}

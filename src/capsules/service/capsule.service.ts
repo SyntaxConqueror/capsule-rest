@@ -29,11 +29,6 @@ export class CapsuleService {
     }
 
     async findReservationsCapsules(type: string): Promise<Capsule[]> {
-        //let capsArr: Capsule[] = [];
-        // if(this.capsule.findIndex(cap => cap.is_reserved === is_reserved)){
-        //     console.log(this.capsule.find(cap => cap.is_reserved));
-        //     capsArr.push(this.capsule.find(cap => cap.is_reserved == is_reserved));
-        // }
         switch(type){
             case "reserved":
                 return this.capsule.filter(cap => cap.is_reserved == true);
