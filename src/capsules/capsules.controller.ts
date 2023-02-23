@@ -12,7 +12,7 @@ export class CapsulesController {
     @Post()
     async create(@Body() createCapsuleDto: CapsuleCreateDto, @Res() res: Response) {
         await this.capsuleService.create(createCapsuleDto);
-        res.send("Капсула створена! ID: " + createCapsuleDto.id);
+        res.send("Капсула створена!");
     }
 
     @Get()

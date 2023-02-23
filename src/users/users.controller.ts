@@ -3,7 +3,6 @@ import { Controller, Get, Post, Body, Param, Put, Delete, ValidationPipe, UsePip
 import { UserService } from './service/user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './interfaces/user-interface';
-import { UserEntity } from './interfaces/user-entity';
 
 @Controller('user')
 export class UsersController {
@@ -16,7 +15,7 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(): Promise<UserEntity[]> {
+  async findAll(): Promise<User[]> {
     return await this.userService.findAll();
   }
 

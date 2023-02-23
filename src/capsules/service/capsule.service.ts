@@ -8,20 +8,20 @@ import { startWith } from 'rxjs';
 
 @Injectable()
 export class CapsuleService {
-    private capsule: Capsule[] = [];
+    private capsules: Capsule[] = [];
 
     async create(capsule: Capsule) {
-        this.capsule.push({...capsule, id: this.capsule.length});
+        this.capsules.push({...capsule, id: this.capsules.length});
            
     }
 
     async findAll(): Promise<Capsule[]> {
-        return this.capsule;
+        return this.capsules;
     }
     
     async findOne(id: number):Promise<Capsule> {
-        if (this.capsule.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
-            return this.capsule.find(capsule => capsule.id.toString() === id.toString());
+        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
+            return this.capsules.find(capsule => capsule.id.toString() === id.toString());
         }else{
             throw Error();
         }
@@ -31,16 +31,16 @@ export class CapsuleService {
     async findReservationsCapsules(type: string): Promise<Capsule[]> {
         switch(type){
             case "reserved":
-                return this.capsule.filter(cap => cap.is_reserved == true);
+                return this.capsules.filter(cap => cap.is_reserved == true);
             case "non_reserved":
-                return this.capsule.filter(cap => cap.is_reserved == false);
+                return this.capsules.filter(cap => cap.is_reserved == false);
         }
     }
 
     async update(id: number, capsule: Capsule) {
-        if (this.capsule.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
-            const index = this.capsule.findIndex(capsule => capsule.id.toString() === id.toString());
-            this.capsule[index] = capsule;
+        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
+            const index = this.capsules.findIndex(capsule => capsule.id.toString() === id.toString());
+            this.capsules[index] = capsule;
             return "Капсула оновлена! ID: " + capsule.id;
         }else{
             throw Error();
@@ -50,9 +50,9 @@ export class CapsuleService {
 
     async remove(id: number) {
         
-        if (this.capsule.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
+        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
             
-            this.capsule = this.capsule.filter(capsule => capsule.id.toString() !== id.toString());
+            this.capsules = this.capsules.filter(capsule => capsule.id.toString() !== id.toString());
             return "Капсула видалена!";
         }
         else{
