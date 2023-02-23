@@ -1,27 +1,26 @@
 // user.service.ts
 import { Injectable, Res } from '@nestjs/common';
-import { User } from '../../users/interfaces/user-interface';
-import { Capsule } from '../interface/capsule-interface';
-import { Response } from 'express';
-import { type } from 'os';
-import { startWith } from 'rxjs';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Capsule, capsuleDocument } from '../schemas/capsule.schema';
+
 
 @Injectable()
 export class CapsuleService {
-    private capsules: Capsule[] = [];
+    constructor(@InjectModel(Capsule.name) private capsuleModel: Model<capsuleDocument>){}
 
     async create(capsule: Capsule) {
-        this.capsules.push({...capsule, id: this.capsules.length});
-           
+        const newCapsule = new this.capsuleModel(capsule);
+        return newCapsule.save();
     }
 
     async findAll(): Promise<Capsule[]> {
-        return this.capsules;
+        return this.capsuleModel.find().exec();
     }
     
-    async findOne(id: number):Promise<Capsule> {
-        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
-            return this.capsules.find(capsule => capsule.id.toString() === id.toString());
+    async findOne(id: string):Promise<Capsule> {
+        if (this.capsuleModel.findById(id)){
+            return this.capsuleModel.findById(id);
         }else{
             throw Error();
         }
@@ -29,31 +28,30 @@ export class CapsuleService {
     }
 
     async findReservationsCapsules(type: string): Promise<Capsule[]> {
+        let filter = {};
         switch(type){
             case "reserved":
-                return this.capsules.filter(cap => cap.is_reserved == true);
+                filter = {is_reserved: true};
+                return this.capsuleModel.find(filter).exec();
             case "non_reserved":
-                return this.capsules.filter(cap => cap.is_reserved == false);
+                filter = {is_reserved: false};
+                return this.capsuleModel.find(filter).exec();
         }
     }
 
-    async update(id: number, capsule: Capsule) {
-        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
-            const index = this.capsules.findIndex(capsule => capsule.id.toString() === id.toString());
-            this.capsules[index] = capsule;
-            return "Капсула оновлена! ID: " + capsule.id;
+    async update(id: string, capsule: Capsule) {
+        if (this.capsuleModel.findById(id)){
+            return this.capsuleModel.findByIdAndUpdate(id);
         }else{
             throw Error();
         }
         
     }
 
-    async remove(id: number) {
+    async remove(id: string) {
         
-        if (this.capsules.findIndex(capsule => capsule.id.toString() === id.toString()) !== -1){
-            
-            this.capsules = this.capsules.filter(capsule => capsule.id.toString() !== id.toString());
-            return "Капсула видалена!";
+        if (this.capsuleModel.findById(id)){
+            return this.capsuleModel.findByIdAndRemove(id);
         }
         else{
             throw Error();

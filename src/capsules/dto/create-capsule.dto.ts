@@ -1,5 +1,5 @@
 import { ArrayMaxSize, IsEmail, IsNotEmpty, Length, Max, MaxLength } from "class-validator";
-import { User } from '../../users/interfaces/user-interface';
+import { User } from "src/users/schemas/users.schemas";
 export class CapsuleCreateDto
 {
     readonly id: number;

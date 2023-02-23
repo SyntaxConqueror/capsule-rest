@@ -1,4 +1,4 @@
-import { User } from '../../users/interfaces/user-interface';
+import { User } from "src/users/schemas/users.schemas";
 export interface Capsule
 {
     id: number;

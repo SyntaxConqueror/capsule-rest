@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Res } from '@nestjs/common';
 import { CapsuleCreateDto } from './dto/create-capsule.dto';
 import { CapsuleService } from './service/capsule.service';
-import { Capsule } from './interface/capsule-interface';
+import { Capsule } from './schemas/capsule.schema';
 import { Response } from 'express';
 
 
@@ -26,18 +26,18 @@ export class CapsulesController {
     }
 
     @Get(':id')
-    async findOne(@Param('id') id: number){
+    async findOne(@Param('id') id: string){
         return await this.capsuleService.findOne(id);
     }
 
     @Put(':id')
-    async update(@Param('id') id: number, @Body() updateCapsuleDto: CapsuleCreateDto, @Res() res: Response) {
+    async update(@Param('id') id: string, @Body() updateCapsuleDto: CapsuleCreateDto, @Res() res: Response) {
         await this.capsuleService.update(id, updateCapsuleDto);
         res.send("Капсула створена! ID: " + id);
     }
 
     @Delete(':id')
-    async remove(@Param('id') id: number, @Res() res: Response) {
+    async remove(@Param('id') id: string, @Res() res: Response) {
         await this.capsuleService.remove(id);
         res.send("Капсула створена! ID: " + id);
     }
