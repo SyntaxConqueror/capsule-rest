@@ -49,7 +49,6 @@ export class CapsuleService {
     }
 
     async remove(id: string) {
-        
         if (this.capsuleModel.findById(id)){
             return this.capsuleModel.findByIdAndRemove(id);
         }

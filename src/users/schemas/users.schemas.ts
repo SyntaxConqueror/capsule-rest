@@ -5,6 +5,7 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User{
+    // TODO create prop(login)
     @Prop()
     name: string;
     @Prop()

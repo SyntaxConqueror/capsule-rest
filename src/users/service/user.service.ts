@@ -10,7 +10,6 @@ export class UserService {
     private users: User[] = [];
 
     async create(user: User): Promise<User> {
-        // this.userModel.push({ ...user, id: this.userModel.length});
         const newUser = new this.userModel(user);
         return newUser.save();
     }
@@ -20,34 +19,32 @@ export class UserService {
     }
     
     async findOne(id: string):Promise<User> {
-        // if (this.userModel.findIndex(user => user.id.toString() === id.toString()) !== -1){
-        //     return this.userModel.find(user => user.id.toString() === id.toString());
-        // }else{
-        //     throw Error();
-        // }
-        return this.userModel.findById(id);
-        
+        if(this.userModel.findById(id)){
+            return this.userModel.findById(id);    
+        }
+        else{
+            throw Error();
+        }
     }
 
     async update(id: string, user: User):Promise<User> {
-        // if (this.userModel.findIndex(user => user.id.toString() === id.toString()) !== -1){
-        //     const index = this.userModel.findIndex(user => user.id.toString() === id.toString());
-        //     this.userModel[index] = user;
-        // }else{
-        //     throw Error();
-        // }
-        return this.userModel.findByIdAndUpdate(id, {new: true});
+        if (this.userModel.findById(id)){
+            return this.userModel.findByIdAndUpdate(id, {new: true});
+        }
+        else{
+            throw Error();
+        }
+        
         
     }
 
     async remove(id: string):Promise<User> {
-        // if (this.userModel.findIndex(user => user.id.toString() === id.toString()) !== -1){
-        //     this.userModel = this.userModel.filter(user => user.id.toString() !== id.toString());
-        // }
-        // else{
-        //     throw Error();
-        // }
-        return this.userModel.findByIdAndRemove(id);
+        if (this.userModel.findById(id)){
+            return this.userModel.findByIdAndRemove(id);
+        }
+        else{
+            throw Error();
+        }
     }
 
 }
