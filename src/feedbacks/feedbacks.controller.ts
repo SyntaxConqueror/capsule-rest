@@ -14,6 +14,14 @@ export class FeedbacksController {
         res.send("Ваш коментарій створено!");
     }
 
+    @Put("/:feedbackId/:userId")
+    async toggleLike(
+      @Param("feedbackId") feedbackId: string,
+      @Param("userId") userId: string
+      ) {
+        return this.feedBacksService.toggleLike(feedbackId, userId);
+    }
+
     @Get()
     async findAll(){
         return await this.feedBacksService.findAll();
@@ -21,7 +29,11 @@ export class FeedbacksController {
 
     @Get(':id')
     async findOne(@Param("id") id:string){
-        return await this.feedBacksService.findOne(id);
+        const feedback = await this.feedBacksService.findOne(id)
+        return {
+            ...feedback,
+            likesCount: feedback.likes.length
+        };
     }
 
     @Get("capsule/:capsuleID")

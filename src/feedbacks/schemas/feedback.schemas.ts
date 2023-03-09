@@ -1,28 +1,27 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Capsule } from "src/capsules/schemas/capsule.schema";
-import { User} from "src/users/schemas/users.schemas";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Capsule } from 'src/capsules/schemas/capsule.schema';
+import { User } from 'src/users/schemas/users.schemas';
 import { ObjectId } from 'mongodb';
+import { now } from 'mongoose';
 
 export type feedbackDocument = Feedback & Document;
 
-
 @Schema()
-export class Feedback{
-    // TODO create more props(likes, date)
-    @Prop({ required: true, maxlength: 500 })
-    content: string;
+export class Feedback {
+  @Prop({ required: true, maxlength: 500 })
+  content: string;
 
-    @Prop()
-    date: string;
+  @Prop({ default: now() })
+  date: Date;
 
-    @Prop()
-    likes: number
+  @Prop()
+  likes?: { userId: string }[];
 
-    @Prop({ type: ObjectId, ref: 'Capsule' })
-    capsuleID: Capsule;
+  @Prop({ type: ObjectId, ref: 'Capsule' })
+  capsuleID: Capsule;
 
-    @Prop({ type: ObjectId, ref: 'User' })
-    userID: User;
+  @Prop({ type: ObjectId, ref: 'User' })
+  userID: User;
 }
 
 export const FeedbackSchema = SchemaFactory.createForClass(Feedback);
