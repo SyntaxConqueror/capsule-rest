@@ -31,7 +31,7 @@ export class FeedbacksController {
     async findOne(@Param("id") id:string){
         const feedback = await this.feedBacksService.findOne(id)
         return {
-            ...feedback,
+            feedback,
             likesCount: feedback.likes.length
         };
     }
