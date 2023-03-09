@@ -4,10 +4,20 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../schemas/users.schemas';
 import { Model } from 'mongoose';
+
 @Injectable()
 export class UserService {
     constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
     private users: User[] = [];
+
+    async register(name: string, email: string, password: string): Promise<User> {
+        const existingUser = await this.userModel.findOne({ email }).exec();
+        if (existingUser) {
+          throw new Error('User already exists');
+        }
+        const newUser = new this.userModel({ name, email, password});
+        return newUser.save();
+    }
 
     async create(user: User): Promise<User> {
         const newUser = new this.userModel(user);
@@ -33,9 +43,7 @@ export class UserService {
         }
         else{
             throw Error();
-        }
-        
-        
+        }        
     }
 
     async remove(id: string):Promise<User> {
@@ -46,5 +54,4 @@ export class UserService {
             throw Error();
         }
     }
-
 }

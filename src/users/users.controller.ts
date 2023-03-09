@@ -9,6 +9,11 @@ import { User } from './schemas/users.schemas';
 export class UsersController {
   constructor(private readonly userService: UserService) {}
 
+  @Post('register')
+  async register(@Body('name') name: string, @Body('email') email: string, @Body('password') password: string) {
+    return this.userService.register(name, email, password);
+  }
+
   @Post()
   @UsePipes(new ValidationPipe())
   async create(@Body() createUserDto: CreateUserDto) {
@@ -29,7 +34,7 @@ export class UsersController {
   @UsePipes(new ValidationPipe())
   async update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
     await this.userService.update(id, updateUserDto);
-  }
+  } 
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
