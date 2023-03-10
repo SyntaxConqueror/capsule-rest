@@ -14,7 +14,7 @@ export class FeedbacksController {
         res.send("Ваш коментарій створено!");
     }
 
-    @Put("/:feedbackId/:userId")
+    @Put("/:feedbackId/likes/:userId")
     async toggleLike(
       @Param("feedbackId") feedbackId: string,
       @Param("userId") userId: string
