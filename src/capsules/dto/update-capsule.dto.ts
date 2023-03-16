@@ -1,4 +1,6 @@
-import { User } from '../../users/interfaces/user-interface';
+import { User } from "src/users/user.schema";
+
+
 export class UpdateCapsuleDto {
     readonly id?: number;
     readonly name?: string;

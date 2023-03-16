@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { User } from "src/users/schemas/users.schemas";
+import { User } from "src/users/user.schema";
+
 
 export type capsuleDocument = Capsule & Document;
 

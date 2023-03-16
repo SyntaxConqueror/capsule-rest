@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Capsule } from 'src/capsules/schemas/capsule.schema';
-import { User } from 'src/users/schemas/users.schemas';
+
+
 import { ObjectId } from 'mongodb';
 import { now } from 'mongoose';
+import { Capsule } from 'src/capsules/schemas/capsule.schema';
+import { User } from 'src/users/user.schema';
 
 export type feedbackDocument = Feedback & Document;
 
