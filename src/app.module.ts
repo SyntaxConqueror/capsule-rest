@@ -14,6 +14,7 @@ import { FeedbackModule } from './feedbacks/modules/feedback.module';
 import { CapsuleModule } from './capsules/modules/capsule-module';
 import { CapsulesController } from './capsules/capsules.controller';
 import { FeedbacksController } from './feedbacks/feedbacks.controller';
+import { ConfigModule } from '@nestjs/config';
 
 
 @Module({
@@ -22,7 +23,8 @@ import { FeedbacksController } from './feedbacks/feedbacks.controller';
     AuthModule,
     FeedbackModule,
     CapsuleModule,
-    MongooseModule.forRoot("mongodb+srv://artshvecz:Lrn7S40vv6e4KLcp@capsule-rest.fkkuc60.mongodb.net/?retryWrites=true&w=majority")
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGO_DB)
   ],
   controllers: [AppController, AuthController, CapsulesController, FeedbacksController],
   providers: [AppService],

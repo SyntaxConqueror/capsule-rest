@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from "bcrypt";
 import { NewUserDto } from 'src/users/dto/new-user.dto';
@@ -15,11 +15,12 @@ export class AuthService {
         return hashPassword;
     }
 
-    async register(user: Readonly<NewUserDto>): Promise<UserDetails | any>{
+    async register(user: Readonly<NewUserDto>): Promise<UserDetails>{
         const {name, email, password} = user;
         const existingUser = await this.userService.findByEmail(email);
 
-        if(existingUser) return "Email is already taken!";
+        if(existingUser) throw new HttpException("Email is already taken!", 
+        HttpStatus.BAD_REQUEST);
         const hashedPassword = await this.hashPassword(password);
 
         const newUser = await this.userService.create(name, email, hashedPassword);
@@ -30,26 +31,26 @@ export class AuthService {
         return bcrypt.compare(password, hashedPassword);
     }
 
-    async validateUser(email: string, password: string): Promise<UserDetails | null>{
+    async validateUser(email: string, password: string): Promise<UserDetails>{
         const user = await this.userService.findByEmail(email);
         const doesUserExists = !!user;
         
         if(!doesUserExists){
-            return null;
+            throw new HttpException("Something is not correct!", HttpStatus.FORBIDDEN);
         }
 
         const doesPasswordMatch = await this.doesPasswordMatch(password, user.password);
 
-        if(!doesPasswordMatch) return null;
+        if(!doesPasswordMatch) throw new HttpException("Something is not correct!", HttpStatus.FORBIDDEN);
 
         return this.userService._getUserDetails(user);
     }
 
-    async login(existingUser: ExistingUserDto):Promise<{token: string} | any>{
+    async login(existingUser: ExistingUserDto):Promise<{token: string}>{
         const {email, password} = existingUser;
         const user = await this.validateUser(email, password);
 
-        if(!user) return "Email or password are invalid";
+        if(!user) throw new HttpException("Bad request", HttpStatus.BAD_REQUEST);
 
         const jwt = await this.jwtService.signAsync({user});
         return {token: jwt};

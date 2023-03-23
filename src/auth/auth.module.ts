@@ -8,12 +8,12 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
 import { JwtStrategy } from './guards/jwt.strategy';
-import * as dotenv from 'dotenv';
-dotenv.config();
+
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    ConfigModule.forRoot(),
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,
