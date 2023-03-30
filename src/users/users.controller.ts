@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Put, UseGuards, UsePipes, Validat
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { NewUserDto } from './dto/new-user.dto';
 import { UsersService } from './users.service';
+import axios from 'axios';
 
 @Controller('users')
 export class UsersController {
@@ -9,26 +10,37 @@ export class UsersController {
     constructor(private usersService: UsersService){}
 
     @Get()
-    findAll(){
+    async findAll(){
+        const response = await axios.post('https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132', {
+            message: 'Request to findAll() method'
+        });
         return this.usersService.findAll();
     }
 
     @UseGuards(JwtGuard)
     @Get(':id')
-    findOne(@Param('id') id: string){
+    async findOne(@Param('id') id: string){
+        const response = await axios.post('https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132', {
+          message: `Request to findOne() method with id ${id}`
+        });
         return this.usersService.findById(id);
     }
 
     @UseGuards(JwtGuard)
     @Put(':id')
-    update(@Param('id') id: string, @Body() updateUserDto: NewUserDto) {
+    async update(@Param('id') id: string, @Body() updateUserDto: NewUserDto) {
+        const response = await axios.post('https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132', {
+            message: `Request to update() method with id ${id}`
+        });
         return this.usersService.update(id, updateUserDto);
     }
-
     @UseGuards(JwtGuard)
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        this.usersService.remove(id);
+    async remove(@Param('id') id: string) {
+        const response = await axios.post('https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132', {
+          message: `Request to remove() method with id ${id}`
+        });
+        return this.usersService.remove(id);
     }
 
 }
