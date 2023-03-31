@@ -3,17 +3,27 @@ import { Feedback } from './schemas/feedback.schemas';
 import { FeedbacksService } from './service/feedbacks.service';
 import { Response } from 'express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { HttpService } from '@nestjs/axios';
 
+const WEBHOOK_URL = 'https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132';
 
 @Controller('feedbacks')
 export class FeedbacksController {
-    constructor(private readonly feedBacksService: FeedbacksService) {}
+    constructor(
+        private readonly feedBacksService: FeedbacksService,
+        private readonly httpService: HttpService,
+      ) {}      
 
     @Post()
     async create(@Body() createFeedback: Feedback, @Res() res: Response) {
         await this.feedBacksService.create(createFeedback);
         res.send("Ваш коментарій створено!");
+    
+        // Send an HTTP POST request to the webhook
+        const data = { message: 'New feedback created' };
+        await this.httpService.post(WEBHOOK_URL, data).toPromise();
     }
+    
 
     @UseGuards(JwtGuard)
     @Put("/:feedbackId/like/:userId")
@@ -51,14 +61,27 @@ export class FeedbacksController {
     }
 
     @UseGuards(JwtGuard)
-    @Put(":id")
-    async update(@Param("id") id:string){
-        return await this.feedBacksService.update(id);
-    }
+    @Put(':id')
+    async update(@Param('id') id: string) {
+        const feedback = await this.feedBacksService.update(id);
+    
+        // Send an HTTP PUT request to the webhook
+        const data = { message: 'Feedback updated', feedback };
+        await this.httpService.put(WEBHOOK_URL, data).toPromise();
+    
+        return feedback;
+    }    
 
     @UseGuards(JwtGuard)
-    @Delete(":id")
-    async remove(@Param("id") id:string){
-        return await this.feedBacksService.remove(id);
+    @Delete(':id')
+    async remove(@Param('id') id: string) {
+        const feedback = await this.feedBacksService.remove(id);
+    
+        // Send an HTTP DELETE request to the webhook
+        const data = { message: 'Feedback removed', feedback };
+        await this.httpService.delete(WEBHOOK_URL, { data }).toPromise();
+    
+        return feedback;
     }
+    
 }
