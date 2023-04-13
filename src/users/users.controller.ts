@@ -1,15 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { NewUserDto } from './dto/new-user.dto';
 import { UsersService } from './users.service';
 import axios from 'axios';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import { UserDetails } from './user-details.interface';
+import RequestWithUser from './dto/requestWithUser.interface';
 
-const WEBHOOK_URL = 'https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132';
+const WEBHOOK_URL = 'https://webhook.site/ecdba867-c78e-47e1-8a9d-5efb6eb8d976';
 
 @Controller('users')
 export class UsersController {
 
     constructor(private usersService: UsersService){}
+
+
+    @Post('avatar')
+    @UseGuards(JwtGuard)
+    @UseInterceptors(FileInterceptor('file'))
+    async addAvatar(@Req() request: RequestWithUser, @UploadedFile() file: Express.Multer.File) {
+
+        console.log(request.user.id);
+        console.log(file.buffer);
+        console.log(file.originalname);
+        return this.usersService.addAvatar(request.user.id, file.buffer, file.originalname);
+    }
+
 
     @Get()
     async findAll(){

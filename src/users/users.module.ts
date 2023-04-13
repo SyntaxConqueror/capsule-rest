@@ -4,15 +4,21 @@ import { UserSchema } from './user.schema';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { HttpModule } from '@nestjs/axios'; 
+import { FilesService } from 'src/files/files.service';
+import { FilesModule } from 'src/files/files.module';
+import { PublicFileSchema } from 'src/files/entities/publicFile.schema';
+import { ConfigService } from 'aws-sdk';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
   imports: [
     MongooseModule.forFeature([{
       name: "User", schema: UserSchema
-    }]), HttpModule
+    }, {name: "PublicFile", schema: PublicFileSchema}]), HttpModule, ConfigModule.forRoot()
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, FilesService, ConfigService],
   exports:[UsersService]
 })
 export class UsersModule {}

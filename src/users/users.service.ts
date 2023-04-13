@@ -5,21 +5,33 @@ import { NewUserDto } from './dto/new-user.dto';
 import { UserDetails } from './user-details.interface';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from "bcrypt";
+import { FilesService } from 'src/files/files.service';
+
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel("User") private userModel: Model<UserDocument>){}
+    constructor(@InjectModel("User") private userModel: Model<UserDocument>,
+    private filesService: FilesService){}
 
     _getUserDetails(user: UserDocument):UserDetails{
         return {
             id: user._id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            avatar: user.avatar
         }
     }
 
     async findByEmail(email: string): Promise<UserDocument | null>{
         return this.userModel.findOne({email}).exec();
     }
+
+    async addAvatar(userId: string, imageBuffer: Buffer, filename: string) {
+        const avatar = await this.filesService.uploadPublicFile(imageBuffer, filename);
+        const user = await this.userModel.findById(userId);
+        user.avatar = avatar;
+        await user.save();
+        return avatar;
+      }
 
     async findById(id: string): Promise<UserDetails | null>{
         const user = await this.userModel.findById(id).exec();

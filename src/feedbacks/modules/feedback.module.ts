@@ -4,7 +4,7 @@ import { User, UserSchema } from 'src/users/user.schema';
 import { FeedbacksController } from '../feedbacks.controller';
 import { Feedback, FeedbackSchema } from '../schemas/feedback.schemas';
 import { FeedbacksService } from '../service/feedbacks.service';
-import { HttpModule } from '@nestjs/axios'; 
+import { HttpModule, HttpService } from '@nestjs/axios'; 
 
 @Module({
     imports:[
