@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Mongoose } from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { UsersController } from './users/users.controller';
 import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
-import { JwtService } from '@nestjs/jwt/dist';
-import { UsersService } from './users/users.service';
 import { FeedbackModule } from './feedbacks/modules/feedback.module';
 import { CapsuleModule } from './capsules/modules/capsule-module';
 import { CapsulesController } from './capsules/capsules.controller';
