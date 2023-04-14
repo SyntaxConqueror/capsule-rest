@@ -6,16 +6,13 @@ import { PrimaryColumn } from "typeorm";
 export type PublicFileDocument = PublicFile & Document;
 
 @Schema()
-export class PublicFile{
-    
-    @Prop({unique:true})
-    public id: number;
+export class PublicFile extends Document{
     
     @Prop()
-    public url: string;
+    url: string;
    
     @Prop()
-    public key: string;
+    key: string;
 
 }
 

@@ -7,6 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { UserDetails } from './user-details.interface';
 import RequestWithUser from './dto/requestWithUser.interface';
+import { request } from 'http';
 
 const WEBHOOK_URL = 'https://webhook.site/ecdba867-c78e-47e1-8a9d-5efb6eb8d976';
 
@@ -20,10 +21,6 @@ export class UsersController {
     @UseGuards(JwtGuard)
     @UseInterceptors(FileInterceptor('file'))
     async addAvatar(@Req() request: RequestWithUser, @UploadedFile() file: Express.Multer.File) {
-
-        console.log(request.user.id);
-        console.log(file.buffer);
-        console.log(file.originalname);
         return this.usersService.addAvatar(request.user.id, file.buffer, file.originalname);
     }
 
