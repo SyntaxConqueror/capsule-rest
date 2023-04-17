@@ -6,7 +6,7 @@ import { Response } from 'express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import axios from 'axios';
 
-const WEBHOOK_URL = 'https://webhook.site/31e057ff-bd7c-4992-98a1-2fc09b31d132';
+const WEBHOOK_URL = 'https://webhook.site/ecdba867-c78e-47e1-8a9d-5efb6eb8d976';
 
 @Controller('capsule')
 export class CapsulesController {

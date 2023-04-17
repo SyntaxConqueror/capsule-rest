@@ -16,7 +16,6 @@ export class UsersController {
 
     constructor(private usersService: UsersService){}
 
-
     @Post('avatar')
     @UseGuards(JwtGuard)
     @UseInterceptors(FileInterceptor('file'))
