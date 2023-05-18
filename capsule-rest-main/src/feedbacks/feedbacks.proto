@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package feedbacks;
+
+service FeedbackController {
+  rpc FindOne (Id) returns (Feedback);
+  rpc FindAll (FindAll) returns (FeedbackResponse);
+  rpc Create (Feedback) returns (Feedback);
+  rpc ToogleLike (MLike) returns (Feedback);
+  rpc Update(Update) returns (Feedback);
+  rpc Remove(Id) returns (Feedback);
+}
+
+message Id {
+    string id = 1;
+}
+
+message Update {
+    Id id = 1;
+    Feedback feedback = 2;
+  }
+
+message MLike {
+    string feedbackID = 1;
+    string userID = 2;
+}
+
+message FindAll {}
+
+message Feedback {
+    string id = 1;
+    string content = 2;
+    string date = 3;
+    repeated string likes = 4;
+    string capsuleID = 5;
+    string userID = 6;
+}
+
+message FeedbackResponse {
+    repeated Feedback feedbacks = 1;
+}

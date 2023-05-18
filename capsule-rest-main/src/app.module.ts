@@ -1,49 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import UsersController from './users/users.controller';
+import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
-import { FilesModule } from './files/files.module';
-import CapsulesController from './capsules/capsules.controller';
-import { CapsulesModule } from './capsules/capsule.module';
+import { CapsulesModule } from './capsules/capsules.module';
+import { FeedbacksController } from './feedbacks/feedbacks.controller';
 import { FeedbacksModule } from './feedbacks/feedbacks.module';
-import FeedbacksController from './feedbacks/feedbacks.controller';
-
-
-
+import { CapsulesController } from './capsules/capsules.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     UsersModule,
     AuthModule,
-    FilesModule,
+    MongooseModule.forRoot(process.env.MONGO_DB),
     CapsulesModule,
-    FeedbacksModule,
-    ClientsModule.register([
-      {
-        name: "USERS_SERVICE",
-        transport: Transport.TCP
-      },
-      {
-        name: "CAPSULES_SERVICE",
-        transport: Transport.TCP,
-        options: {port: 3002}
-      },
-      {
-        name: "FEEDBACKS_SERVICE",
-        transport: Transport.TCP,
-        options: {port: 3003}
-      }
-  ]), 
-    MongooseModule.forRoot(process.env.MONGO_DB)
+    FeedbacksModule
   ],
-  controllers: [AppController, UsersController, AuthController, CapsulesController, FeedbacksController],
-  providers: [AppService],
+  controllers: [UsersController, AuthController, CapsulesController, FeedbacksController],
+  providers: [],
 })
 export class AppModule {}

@@ -1,69 +1,49 @@
-import {
-    Body,
-    Controller,
-    Get,
-    Post,
-    UseGuards,
-    UseInterceptors,
-    ClassSerializerInterceptor, Inject, Param, Put, Delete,
-} from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { feedbacksMicroserviceOptions } from './feedbacks.grpc.options';
+import { Client, ClientGrpc } from '@nestjs/microservices';
+import { IFeedbacksGrpcService } from './feedbacks.grpc.interface';
 import { Feedback } from './schemas/feedback.schemas';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-
-
 
 @Controller('feedbacks')
-@UseInterceptors(ClassSerializerInterceptor)
-export default class FeedbacksController {
-    
-    constructor(@Inject('FEEDBACKS_SERVICE') private feedbacksService: 
-    ClientProxy){}
+export class FeedbacksController {
+    @Client(feedbacksMicroserviceOptions)
+    private client: ClientGrpc;
 
-    @Get()
-    async findAllFeedbacks(){
-        return this.feedbacksService.send({cmd: 'find-all-feedbacks'}, {});
-    }
+    private grpcService: IFeedbacksGrpcService;
 
-    @Post()
-    async createFeedback(@Body() createFeedback: Feedback){
-        return this.feedbacksService.send({cmd: 'create-feedback'}, createFeedback);
+    onModuleInit() {                                                            
+        this.grpcService = this.client.getService<IFeedbacksGrpcService>('FeedbackController'); 
     }
 
     @Get(":id")
-    async getFeedbackById(@Param("id") id: string){
-        return this.feedbacksService.send({cmd: 'find-feedback-by-id'}, id);
+    async findOne(@Param("id") id : string){
+        return this.grpcService.findOne({id: id});
     }
 
-    @UseGuards(JwtGuard)
-    @Put("/:feedbackId/like/:userId")
-    async toogleLike(
-        @Param("feedbackId") feedbackId: string,
-        @Param("userId") userId: string
-        ){
-            const data = {feedbackId, userId};
-            return this.feedbacksService.send({cmd: 'toogle-like'}, data);
-        }
-    
-    @Get("capsule/:capsuleID")
-    async findAllFeedbacksForCapsule(@Param("capsuleID") capsuleID:string){
-        return this.feedbacksService.send({cmd: 'find-all-feedbacks-for-capsule'}, capsuleID);
+    @Get()
+    async findAll(){
+        return this.grpcService.findAll({});
     }
 
-    @Get("user/:userID")
-    async findAllFeedbacksUserCreated(@Param("userID") userID:string){
-        return this.feedbacksService.send({cmd: 'find-all-feedbacks-user-created'}, userID);
+    @Post()
+    async create(@Body() feedback: Feedback){
+        return this.grpcService.create(feedback);
     }
 
-    @UseGuards(JwtGuard)
-    @Put(':id')
-    async updateFeedback(@Param('id') id: string){
-        return this.feedbacksService.send({cmd: 'update-feedback'}, id);
+    @Post(":feedbackID/like/:userID")
+    async toogleLike(@Param("feedbackID") feedbackID: String, @Param("userID") userID: String){
+        
+        return this.grpcService.toogleLike({feedbackID, userID});
     }
 
-    @UseGuards(JwtGuard)
-    @Delete(':id')
-    async removeFeedback(@Param('id') id: string){
-        return this.feedbacksService.send({cmd: 'delete-feedback'}, id);
+    @Put(":id")
+    async update(@Param("id") id: String, @Body() feedback: Feedback){
+        const data = {id: {id}, feedback: feedback};
+        return this.grpcService.update(data);
+    }
+
+    @Delete(":id")
+    async remove(@Param("id") id: String){
+        return this.grpcService.remove({id: id});
     }
 }

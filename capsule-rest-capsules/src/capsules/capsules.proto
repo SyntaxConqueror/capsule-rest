@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package capsules;
+
+service CapsuleController {
+  rpc FindOne(Id) returns (Capsule);
+  rpc FindAll (FindAll) returns (CapsuleResponse);
+  rpc Create (CapsuleForCreate) returns (Capsule);
+  rpc Update (Update) returns (Capsule);
+  rpc Remove (Id) returns (Capsule);
+}
+
+message Update {
+  string id = 1;
+  Capsule capsule = 2;
+}
+
+message Capsule {
+
+  string _id = 1;
+  string name = 2;
+  int32 client_amount = 3;
+  int32 price = 4;
+  bool is_reserved = 5;
+  repeated string facillitiesList = 6;
+}
+
+message CapsuleForCreate {
+  string name = 1;
+  int32 clientAmount = 2;
+  int32 price = 3;
+  bool isReserved = 4;
+  repeated string facillitiesList = 5;
+}
+
+message CapsuleResponse {
+  repeated Capsule capsules = 1;
+}
+
+message Id {
+    string id = 1;
+}
+
+message FindAll {}

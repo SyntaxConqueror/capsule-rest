@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package users;
+
+service UserController {
+  rpc FindUser (Id) returns (User);
+  rpc FindAll (FindAll) returns (UsersResponse);
+  rpc Update (Update) returns (UserForUpdate);
+  rpc CreateUser(UserForUpdate) returns (User);
+  rpc Delete (Id) returns (User);
+}
+
+message NumberArray {
+  repeated double data = 1;
+}
+
+message Id {
+  string id = 1;
+}
+
+message Update {
+  Id id = 1;
+  UserForUpdate user = 2;
+}
+
+message FindAll {}
+
+message UsersResponse {
+  repeated User users = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  PublicFile avatar = 4;
+}
+
+message UserForUpdate {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  PublicFile avatar = 4;
+}
+
+message FullUser {
+  string _id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  PublicFile avatar = 5;
+}
+
+message PublicFile {
+  string url = 1;
+  string key = 2;
+}

@@ -5,7 +5,10 @@ import { NewUserDto } from './new-user.dto';
 import { UserDetails } from './user-details.interface';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from "bcrypt";
-import { FilesService } from 'src/files/files.service';
+
+import e from 'express';
+import { MessagePattern } from '@nestjs/microservices';
+import { FilesService } from '../files/files.service';
 
 
 
@@ -23,7 +26,7 @@ export class UsersService {
         }
     }
 
-    
+
     async findByEmail(email: string): Promise<UserDocument | null>{
         return this.userModel.findOne({email}).exec();
     }
@@ -40,6 +43,7 @@ export class UsersService {
         await user.save();
         return avatar;
     }
+
 
     async deleteAvatar(userId: string) {
         const user = await this.userModel.findById(userId);
@@ -72,16 +76,20 @@ export class UsersService {
     }
 
     async findAll(){
-        return this.userModel.find().exec();
+        const users = await this.userModel.find().exec();
+        return {users: users}; 
     }
 
-    async update(id: string, user:NewUserDto): Promise<User>{
-        if (this.userModel.findById(id)){
+    async update(data: { id: {id: String}, user: NewUserDto }): Promise<User>{
+        const {id, user} = data;
+        const Id = id.id;
+        if (this.userModel.findById(Id)){
             const {name, email, password} = user;
-            const hashedPassword = bcrypt.hash(password, 10);
-            const newUser = {name, email, password: (await hashedPassword).toString()}
+            let pass = password.toString();
+            const hashedPassword = await bcrypt.hash(pass, 10);
+            const newUser = {name, email, password: hashedPassword}
             
-            return this.userModel.findByIdAndUpdate(id, newUser);
+            return this.userModel.findByIdAndUpdate(Id, newUser);
         }
         else{
             throw Error();

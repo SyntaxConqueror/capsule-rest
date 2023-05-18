@@ -1,48 +1,47 @@
-import {
-        Body,
-        Controller,
-        Get,
-        Post,
-        UseGuards,
-        UseInterceptors,
-        ClassSerializerInterceptor, Inject, Param, Put, Delete,
-    } from '@nestjs/common';
-    import { ClientProxy } from '@nestjs/microservices';
-import { UserDto } from './user.dto';
+import { Body, Controller, Delete, Get, OnModuleInit, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { usersMicroserviceOptions } from './users.grpc.options';
+import { ClientGrpc, Client } from '@nestjs/microservices';
+import { IUsersGrpcService } from './users.grpc.interface';
+import { User } from './user.schema';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { ExistingUserDto } from './existing-user.dto';
-import { AuthService } from 'src/auth/auth.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 
 
 @Controller('users')
-@UseInterceptors(ClassSerializerInterceptor)
-export default class UsersController {
-    
-    constructor(
-        @Inject('USERS_SERVICE') private usersService: ClientProxy
-    ) {}
+export class UsersController implements OnModuleInit{
+    @Client(usersMicroserviceOptions)
+    private client: ClientGrpc;
 
-    
-    @Get()
-    async getUsers() {
-        return this.usersService.send({cmd: 'find-all-users'}, {});
+    private grpcService: IUsersGrpcService;
+
+    onModuleInit() {                                                            
+        this.grpcService = this.client.getService<IUsersGrpcService>('UserController'); 
     }
-
+    
+    //@UseGuards(JwtGuard)
     @Get(":id")
-    async getUserById(@Param('id') id: string){
-        return this.usersService.send({cmd: 'find-user-by-id'}, id);
+    async findUser(@Param("id") id: String){
+        
+        return this.grpcService.findUser({id: id});
     }
 
-    @UseGuards(JwtGuard)
-    @Put(":id")
-    async updateUserById(@Param('id') id: string, @Body() user: UserDto){
-        return this.usersService.send({cmd : 'update-user-by-id'}, {id, user});
+    @Get()
+    async findAll(){
+        return this.grpcService.findAll({});
     }
 
-    @UseGuards(JwtGuard)
-    @Delete(":id")
-    async deleteUserById(@Param("id") id: string){
-        return this.usersService.send({cmd: 'delete-user-by-id'}, id);
-    }
     
+    @Put(":id")
+    async update(@Param("id") id: String, @Body() user: User){
+        
+        const data = {id: {id}, user: user};
+        return this.grpcService.update(data);
+    }
+    @Delete(":id")
+    async delete(@Param("id") id: String){
+        return this.grpcService.delete({id:id});
+    }
+
 }
