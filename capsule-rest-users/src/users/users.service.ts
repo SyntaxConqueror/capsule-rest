@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NewUserDto } from './dto/new-user.dto';
@@ -7,15 +7,20 @@ import { User, UserDocument } from './user.schema';
 import * as bcrypt from "bcrypt";
 
 import e from 'express';
-import { MessagePattern } from '@nestjs/microservices';
+import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { FilesService } from '../files/files.service';
+
 
 
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel("User") private userModel: Model<UserDocument>,
-    private filesService: FilesService){}
+    constructor(
+        @InjectModel("User") private userModel: Model<UserDocument>,
+        private filesService: FilesService,
+        @Inject("GATEWAY_SERVICE") private gatewayService: ClientProxy,
+        @Inject("ES_SERVICE") private readonly esService: ClientProxy,
+    ){}
 
     _getUserDetails(user: UserDocument):UserDetails{
         return {
@@ -27,6 +32,7 @@ export class UsersService {
     }
 
 
+    
     async findByEmail(email: string): Promise<UserDocument | null>{
         return this.userModel.findOne({email}).exec();
     }
@@ -34,7 +40,6 @@ export class UsersService {
     async addAvatar(userId: string, imageBuffer: Buffer, filename: string) {
         
         const avatar = await this.filesService.uploadPublicFile(imageBuffer, filename);
-        console.log(avatar._id);
         const user = await this.userModel.findById(userId);
         if(user.avatar != null){
             this.filesService.deletePublicFile(avatar._id);
@@ -44,11 +49,9 @@ export class UsersService {
         return avatar;
     }
 
-
     async deleteAvatar(userId: string) {
         const user = await this.userModel.findById(userId);
         const fileId = user.avatar?._id;
-        console.log(fileId);
         if (fileId) {
           user.avatar = null;
           await this.filesService.deletePublicFile(fileId)
@@ -59,9 +62,19 @@ export class UsersService {
     async findById(id: string): Promise<UserDetails | null>{
         const user = await this.userModel.findById(id).exec();
         if(!user) return null;
+        await this.gatewayService.send({cmd: "find-user"}, {id: id}).subscribe();
         return this._getUserDetails(user);
+        
     }
 
+    async findByName(name: string) {
+        const user = await this.userModel.find({name: name});
+        if(!user) return "No user with this name!";
+        return await user;
+    }
+
+
+    
     async create(
         name: string,
         email: string,
@@ -71,25 +84,27 @@ export class UsersService {
         const newUser = new this.userModel({
             name, email, password: hashedPassword
         });
-
+        await this.esService.send({cmd:'index-user'},newUser);
         return newUser.save();
     }
 
     async findAll(){
-        const users = await this.userModel.find().exec();
-        return {users: users}; 
+        (await this.userModel.find().exec()).forEach((user)=>{
+            this.esService.send({cmd: 'index-user'}, user);
+        });
+        return this.userModel.find().exec();
     }
 
-    async update(data: { id: {id: String}, user: NewUserDto }): Promise<User>{
+    async update(data: { id: string, user: NewUserDto }): Promise<User>{
         const {id, user} = data;
-        const Id = id.id;
-        if (this.userModel.findById(Id)){
+        if (this.userModel.findById(id)){
             const {name, email, password} = user;
             let pass = password.toString();
             const hashedPassword = await bcrypt.hash(pass, 10);
+            
             const newUser = {name, email, password: hashedPassword}
             
-            return this.userModel.findByIdAndUpdate(Id, newUser);
+            return this.userModel.findByIdAndUpdate(id, newUser);
         }
         else{
             throw Error();

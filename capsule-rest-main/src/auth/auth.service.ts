@@ -1,17 +1,33 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from "bcrypt";
-import {JwtService} from '@nestjs/jwt';
+
+import { JwtService } from '@nestjs/jwt';
 import { NewUserDto } from 'src/users/new-user.dto';
 import { ExistingUserDto } from 'src/users/existing-user.dto';
 import { UserDetails } from 'src/users/user-details.interface';
+import { ConfigService } from '@nestjs/config';
+import { ClientProxy } from '@nestjs/microservices';
 
 
 
 @Injectable()
 export class AuthService {
-    constructor(private userService: UsersService, private jwtService: JwtService){}
+    constructor(private userService: UsersService,
+        private jwtService: JwtService,
+        private readonly configService: ConfigService,
+        ){}
     
+
+    public async getUserFromAuthenticationToken(token: string) {
+        const payload = this.jwtService.verify(token, {
+          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET')
+        });
+        
+        if (payload.user.id) {
+          return this.userService.findById(payload.user.id);
+        }
+    }
 
     async hashPassword(password: string): Promise<string>{
         const salt = 10;
@@ -45,7 +61,9 @@ export class AuthService {
 
         const doesPasswordMatch = await this.doesPasswordMatch(password, user.password);
 
-        if(!doesPasswordMatch) throw new HttpException("Something is not correct!", HttpStatus.FORBIDDEN);
+        if(!doesPasswordMatch){
+            throw new HttpException("Something is not correct!", HttpStatus.FORBIDDEN);
+        } 
 
         return this.userService._getUserDetails(user);
     }
@@ -54,7 +72,10 @@ export class AuthService {
         const {email, password} = existingUser;
         const user = await this.validateUser(email, password);
 
-        if(!user) throw new HttpException("Bad request", HttpStatus.BAD_REQUEST);
+        
+        if(!user){
+            throw new HttpException("Bad request", HttpStatus.BAD_REQUEST);
+        }
 
         const jwt = await this.jwtService.signAsync({user});
         return {token: jwt};

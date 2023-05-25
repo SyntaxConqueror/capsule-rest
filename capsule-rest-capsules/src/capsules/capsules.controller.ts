@@ -1,46 +1,57 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { CapsuleCreateDto } from './dto/create-capsule.dto';
 import { CapsuleService } from './service/capsule.service';
 import { Capsule } from './schemas/capsule.schema';
 
-import { GrpcMethod, MessagePattern } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
+import { User, UserDocument } from 'src/users/user.schema';
 
 
 @Controller('capsules')
 export class CapsulesController {
     constructor(private readonly capsuleService: CapsuleService) {}
 
-    @GrpcMethod("CapsuleController", "Create")
-    async create(capsule: Capsule) {
-        console.log(capsule);
-        return await this.capsuleService.create(capsule);
+    @MessagePattern({cmd: 'create-capsule'})
+    async create(createCapsuleDto: Capsule) {
+        return await this.capsuleService.create(createCapsuleDto);
     }
     
-    @GrpcMethod("CapsuleController", "FindAll")
-    async findAll() {
+    @MessagePattern({cmd: 'find-capsules'})
+    async findAll(): Promise<Capsule[]> {
         return await this.capsuleService.findAll();
     }
     
-    
+    @MessagePattern({cmd : 'find-not-reserved-capsules'})
     async findNotReservedCapsules(type: string): Promise<Capsule[]>{
         return this.capsuleService.findReservationsCapsules(type);
     }
     
-    @GrpcMethod("CapsuleController", "FindOne")
-    async findOne(id: {id: string}){
+    @MessagePattern({cmd: 'find-capsule-by-id'})
+    async findOne(id: string){
+        return await this.capsuleService.findOne(id);
+    }
+
+    @MessagePattern({cmd: 'reserve-capsule'})
+    async reserveCapsule(data: {capsuleID: string, user: any}){
+        const {capsuleID, user} = data;
         
-        return await this.capsuleService.findOne(id.id);
+        return await this.capsuleService.reserveCapsule(capsuleID, user);
+    }
+
+    @MessagePattern({cmd: 'unreserve-capsule'})
+    async unreserveCapsule(data: {capsuleID: string, user: any}){
+        const {capsuleID, user} = data;
+        return await this.capsuleService.unReserveCapsule(capsuleID, user);
     }
     
-    @GrpcMethod("CapsuleController", "Update")
+    @MessagePattern({cmd: 'update-capsule-by-id'})
     async update(data: {id: string, capsule: Capsule}) {
-        
         const {id, capsule} = data;
         return await this.capsuleService.update(id, capsule);
     }
     
-    @GrpcMethod("CapsuleController", "Remove")
-    async remove(id: {id: string}) {
-        
-        return await this.capsuleService.remove(id.id);
+    @MessagePattern({cmd: 'delete-capsule-by-id'})
+    async remove(id: string) {
+        return await this.capsuleService.remove(id);
     }
 }

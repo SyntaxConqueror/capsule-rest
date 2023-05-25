@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, HydratedDocument } from "mongoose";
-import { PublicFile, PublicFileDocument } from "../files/entities/publicFile.schema";
+import { PublicFile, PublicFileDocument } from "src/files/entities/publicFile.schema";
 
 export type UserDocument = User & Document;
 

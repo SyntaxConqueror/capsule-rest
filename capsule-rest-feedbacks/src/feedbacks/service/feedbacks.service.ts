@@ -1,8 +1,9 @@
-import { Injectable, Res } from '@nestjs/common';
+import { Inject, Injectable, Res } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/users/user.schema';
 import { Feedback, feedbackDocument } from '../schemas/feedback.schemas';
+import { ClientProxy } from '@nestjs/microservices';
 
 
 @Injectable()
@@ -10,6 +11,7 @@ export class FeedbacksService {
   constructor(
     @InjectModel(Feedback.name) private feedbackModel: Model<feedbackDocument>,
     @InjectModel("User") private userModel: Model<User>,
+    @Inject("GATEWAY_SERVICE") private gatewayService: ClientProxy,
   ) {}
 
   async create(feedback: Feedback): Promise<Feedback> {
@@ -17,9 +19,12 @@ export class FeedbacksService {
     return createdFeedback.save();
   }
 
-  async findAll() {
-    const feedbacks = await this.feedbackModel.find().exec();
-    return {feedbacks: feedbacks};
+  async findAll(): Promise<Feedback[]> {
+    return this.feedbackModel
+      .find()
+      .populate('capsuleID')
+      .populate('userID')
+      .exec();
   }
 
   async findOne(id: string): Promise<Feedback> {
@@ -56,10 +61,10 @@ export class FeedbacksService {
     }
   }
 
-  async update(data: {id: {id: String}, feedback: Feedback}) {
-    if (this.feedbackModel.findById(data.id.id)) {
+  async update(id: string) {
+    if (this.feedbackModel.findById(id)) {
       return this.feedbackModel
-        .findByIdAndUpdate(data.id.id, data.feedback)
+        .findByIdAndUpdate(id)
         .populate('capsuleID')
         .populate('userID');
     } else {
@@ -87,9 +92,24 @@ export class FeedbacksService {
       (item) => item.userId === userId,
     );
 
-    feedbackUser !== -1
-      ? feedback.likes.splice(feedbackUser, 1)
-      : feedback.likes.push({ userId });
+    // feedbackUser !== -1
+    //   ? feedback.likes.splice(feedbackUser, 1)
+    //   : feedback.likes.push({ userId });
+    if(feedbackUser !== -1){
+      feedback.likes.splice(feedbackUser, 1);
+      await this.gatewayService.send({cmd: 'feedback-like'}, {
+        feedbackId: feedbackId,
+        userId: userId,
+        toogled: false
+      }).subscribe();
+    } else {
+      feedback.likes.push({ userId });
+      await this.gatewayService.send({cmd: 'feedback-like'}, {
+        feedbackId: feedbackId,
+        userId: userId,
+        toogled: true
+      }).subscribe();
+    }
 
     await feedback.save();
     return feedback;

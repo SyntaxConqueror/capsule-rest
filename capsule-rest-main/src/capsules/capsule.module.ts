@@ -11,22 +11,30 @@ import CapsulesController from './capsules.controller';
         ConfigModule,
         ClientsModule.register([{
             name: "CAPSULES_SERVICE",
-            transport: Transport.TCP
+            transport: Transport.RMQ
         }]) 
     ],
   controllers: [CapsulesController],
   providers: [
     {
       provide: 'CAPSULES_SERVICE',
-      useFactory: (configService: ConfigService) => (
-        ClientProxyFactory.create({
-          transport: Transport.TCP,
+      useFactory: (configService: ConfigService) => {
+        const user = configService.get('RMQ_USER');
+        const password = configService.get('RMQ_PASS');
+        const host = configService.get('RMQ_HOST');
+        const queueName = configService.get('RMQ_QUEUE_CAPSULES');
+ 
+        return ClientProxyFactory.create({
+          transport: Transport.RMQ,
           options: {
-            host: configService.get('CAPSULES_SERVICE_HOST'),
-            port: configService.get('CAPSULES_SERVICE_PORT'),
-          }
+            urls: [`amqp://${user}:${password}@${host}`],
+            queue: queueName,
+            queueOptions: {
+              durable: true,
+            },
+          },
         })
-      ),
+      },
       inject: [ConfigService],
     }
   ],

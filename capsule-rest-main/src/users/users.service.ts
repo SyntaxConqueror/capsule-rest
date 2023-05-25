@@ -5,17 +5,17 @@ import { NewUserDto } from './new-user.dto';
 import { UserDetails } from './user-details.interface';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from "bcrypt";
-
-import e from 'express';
-import { MessagePattern } from '@nestjs/microservices';
-import { FilesService } from '../files/files.service';
+import { FilesService } from 'src/files/files.service';
+import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 
 
-
+@WebSocketGateway()
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel("User") private userModel: Model<UserDocument>,
-    private filesService: FilesService){}
+    constructor(
+        @InjectModel("User") private userModel: Model<UserDocument>,
+        private filesService: FilesService
+        ){}
 
     _getUserDetails(user: UserDocument):UserDetails{
         return {
@@ -26,7 +26,7 @@ export class UsersService {
         }
     }
 
-
+    
     async findByEmail(email: string): Promise<UserDocument | null>{
         return this.userModel.findOne({email}).exec();
     }
@@ -34,7 +34,6 @@ export class UsersService {
     async addAvatar(userId: string, imageBuffer: Buffer, filename: string) {
         
         const avatar = await this.filesService.uploadPublicFile(imageBuffer, filename);
-        console.log(avatar._id);
         const user = await this.userModel.findById(userId);
         if(user.avatar != null){
             this.filesService.deletePublicFile(avatar._id);
@@ -44,11 +43,9 @@ export class UsersService {
         return avatar;
     }
 
-
     async deleteAvatar(userId: string) {
         const user = await this.userModel.findById(userId);
         const fileId = user.avatar?._id;
-        console.log(fileId);
         if (fileId) {
           user.avatar = null;
           await this.filesService.deletePublicFile(fileId)
@@ -76,20 +73,16 @@ export class UsersService {
     }
 
     async findAll(){
-        const users = await this.userModel.find().exec();
-        return {users: users}; 
+        return this.userModel.find().exec();
     }
 
-    async update(data: { id: {id: String}, user: NewUserDto }): Promise<User>{
-        const {id, user} = data;
-        const Id = id.id;
-        if (this.userModel.findById(Id)){
+    async update(id: string, user:NewUserDto): Promise<User>{
+        if (this.userModel.findById(id)){
             const {name, email, password} = user;
-            let pass = password.toString();
-            const hashedPassword = await bcrypt.hash(pass, 10);
-            const newUser = {name, email, password: hashedPassword}
+            const hashedPassword = bcrypt.hash(password, 10);
+            const newUser = {name, email, password: (await hashedPassword).toString()}
             
-            return this.userModel.findByIdAndUpdate(Id, newUser);
+            return this.userModel.findByIdAndUpdate(id, newUser);
         }
         else{
             throw Error();

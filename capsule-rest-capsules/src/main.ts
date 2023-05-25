@@ -1,20 +1,29 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  const user = configService.get('RMQ_USER');
+  const password = configService.get('RMQ_PASS');
+  const host = configService.get('RMQ_HOST');
+  const queueName = configService.get('RMQ_QUEUE_CAPSULES');
+
   await app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.GRPC,
+    
+    transport: Transport.RMQ,
     options: {
-      package: 'capsules',
-      protoPath: join(__dirname, '../src/capsules/capsules.proto'),
-      url: configService.get("GRPC_CONNECTION_URL")
+      urls: [`amqp://${user}:${password}@${host}`],
+      queue: queueName,
+      queueOptions: {
+        durable: true,
+      },
     },
   });
   app.startAllMicroservices();
+  //app.listen(configService.get("PORT"));
 }
 bootstrap();

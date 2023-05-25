@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Pricing } from "aws-sdk";
 import { Document, HydratedDocument } from "mongoose";
 import { PublicFile, PublicFileDocument } from "../files/entities/publicFile.schema";
+import { OneToOne } from "typeorm";
 
 export type UserDocument = User & Document;
 
